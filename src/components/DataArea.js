@@ -56,6 +56,8 @@ export default function DataArea() {
           let DOB_a = new Date(a[heading].date);
           let DOB_b = new Date(b[heading].date);
           return DOB_a > DOB_b ? -1 : 1;
+        } else if (heading === "phone") {
+          return a[heading].localeCompare(b[heading]);
         } else {
           return a[heading] - b[heading];
         }
@@ -70,11 +72,13 @@ export default function DataArea() {
         else if (heading === "name") {
           return b[heading].first.localeCompare(a[heading].first);
         } else if (heading === "email") {
-          return a[heading].localeCompare(b[heading]);
+          return b[heading].localeCompare(a[heading]);
         } else if (heading === "dob") {
           let DOB_a = new Date(a[heading].date);
           let DOB_b = new Date(b[heading].date);
-          return DOB_a > DOB_b ? -1 : 1;
+          return DOB_b > DOB_a ? -1 : 1;
+        } else if (heading === "phone") {
+          return b[heading].localeCompare(a[heading]);
         } else {
           return b[heading] - a[heading];
         }
