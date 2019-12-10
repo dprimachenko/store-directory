@@ -87,7 +87,7 @@ export default function DataArea() {
   function handleSearchChange(event) {
     console.log(event.target.value);
     const filter = event.target.value;
-    const filteredList = employeeState.users.filter(item => {
+    const filteredList = employeeState.employees.filter(item => {
       // merge data together, then see if user input is anywhere inside
       let values = Object.values(item)
         .join("")
