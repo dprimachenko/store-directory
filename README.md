@@ -1,4 +1,4 @@
-# store-directory
+# employee-directory
 <p>
   application supports:
 </p>
