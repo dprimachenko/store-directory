@@ -1,105 +1,110 @@
-import React, { Component } from "react";
+import React, { useEffect, useState } from "react";
 import DataTable from "./DataTable";
 import Nav from "./Nav";
 import API from "../utils/API";
 import "../styles/DataArea.css";
+import EmployeeContext from "../utils/employeeContext.js";
 
-export default class DataArea extends Component {
-  constructor() {
-    super();
-    this.state = {
-      users: [{}],
-      order: "descend",
-      filteredUsers: [{}],
-      headings: [
-        { name: "Image", width: "10%" },
-        { name: "Name", width: "10%" },
-        { name: "Phone", width: "20%" },
-        { name: "Email", width: "20%" },
-        { name: "DOB", width: "10%" }
-      ],
+export default function DataArea() {
 
-      handleSort: heading => {
+  const [employeeState, setUsers] = useState({
+    employees: [{}],
+    filteredEmployees: [{}]
+  });
 
-        if (this.state.order === "descend") {
-          this.setState({
-            order: "ascend"
-          })
-        } else {
-          this.setState({
-            order: "descend"
-          })
-        }
+  const [order, setOrder] = useState("descend");
 
-        const compareFnc = (a, b) => {
-          if (this.state.order === "ascend") {
-            // account for missing values
-            if (a[heading] === undefined) {
-              return 1;
-            } else if (b[heading] === undefined) {
-              return -1;
-            }
-            // numerically
-            else if (heading === "name") {
-              return a[heading].first.localeCompare(b[heading].first);
-            } else {
-              return a[heading] - b[heading];
-            }
-          } else {
-            // account for missing values
-            if (a[heading] === undefined) {
-              return 1;
-            } else if (b[heading] === undefined) {
-              return -1;
-            }
-            // numerically
-            else if (heading === "name") {
-              return b[heading].first.localeCompare(a[heading].first);
-            } else {
-              return b[heading] - a[heading];
-            }
-          }
+  const [headings, setHeadings] = useState([
+    { name: "Image", width: "10%" },
+    { name: "Name", width: "10%" },
+    { name: "Phone", width: "20%" },
+    { name: "Email", width: "20%" },
+    { name: "DOB", width: "10%" }
+  ]);
 
-        }
-        const sortedUsers = this.state.filteredUsers.sort(compareFnc);
-        this.setState({ filteredUsers: sortedUsers });
-      },
-      handleSearchChange: event => {
-        console.log(event.target.value);
-        const filter = event.target.value;
-        const filteredList = this.state.users.filter(item => {
-          // merge data together, then see if user input is anywhere inside
-          let values = Object.values(item)
-            .join("")
-            .toLowerCase();
-          return values.indexOf(filter.toLowerCase()) !== -1;
-        });
-        this.setState({ filteredUsers: filteredList });
-      }
-    };
-  }
-
-  componentDidMount() {
-    API.getUsers().then(results => {
-      this.setState({
-        users: results.data.results,
-        filteredUsers: results.data.results
+  useEffect(() => {
+    API.getUsers().then(res => {
+      setUsers({
+        employees: res.data.results,
+        filteredEmployees: res.data.results
       });
     });
+  }, []);
+
+  function handleSort(heading) {
+
+    if (order === "descend") {
+      setOrder("ascend");
+    } 
+    else 
+      setOrder("descend");
+
+    function compareFnc(a,b) {
+      if (order === "ascend") {
+        // account for missing values
+        if (a[heading] === undefined) {
+          return 1;
+        } else if (b[heading] === undefined) {
+          return -1;
+        }
+        // numerically
+        else if (heading === "name") {
+          return a[heading].first.localeCompare(b[heading].first);
+        } else if (heading === "email") {
+          return a[heading].localeCompare(b[heading]);
+        } else if (heading === "dob") {
+          let DOB_a = new Date(a[heading].date);
+          let DOB_b = new Date(b[heading].date);
+          return DOB_a > DOB_b ? -1 : 1;
+        } else {
+          return a[heading] - b[heading];
+        }
+      } else {
+        // account for missing values
+        if (a[heading] === undefined) {
+          return 1;
+        } else if (b[heading] === undefined) {
+          return -1;
+        }
+        // numerically
+        else if (heading === "name") {
+          return b[heading].first.localeCompare(a[heading].first);
+        } else if (heading === "email") {
+          return a[heading].localeCompare(b[heading]);
+        } else if (heading === "dob") {
+          let DOB_a = new Date(a[heading].date);
+          let DOB_b = new Date(b[heading].date);
+          return DOB_a > DOB_b ? -1 : 1;
+        } else {
+          return b[heading] - a[heading];
+        }
+      }
+    }
+    const sortedUsers = employeeState.filteredEmployees.sort(compareFnc);
+    setUsers({ ...employeeState, filteredEmployees: sortedUsers });
   }
 
-  render() {
-    return (
-      <>
-        <Nav handleSearchChange={this.state.handleSearchChange} />
-        <div className="data-area">
-          <DataTable
-            headings={this.state.headings}
-            users={this.state.filteredUsers}
-            handleSort={this.state.handleSort}
-          />
-        </div>
-      </>
-    );
+  function handleSearchChange(event) {
+    console.log(event.target.value);
+    const filter = event.target.value;
+    const filteredList = employeeState.users.filter(item => {
+      // merge data together, then see if user input is anywhere inside
+      let values = Object.values(item)
+        .join("")
+        .toLowerCase();
+      return values.indexOf(filter.toLowerCase()) !== -1;
+    });
+    setUsers({ ...employeeState, filteredEmployees: filteredList });
   }
+
+  return (
+    <>
+      <EmployeeContext.Provider value={{ headings, employeeState, order, handleSort, handleSearchChange }}>
+        <Nav />
+        <div className="data-area">
+          <DataTable />
+        </div>
+      </EmployeeContext.Provider>
+    </>
+  );
 }

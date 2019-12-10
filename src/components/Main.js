@@ -1,13 +1,11 @@
-import React, { Component } from "react";
+import React from "react";
 import DataArea from "./DataArea";
 import "../styles/Main.css";
 
-export default class Main extends Component {
-  render() {
+export default function Main() {
     return (
-      <>
-        <DataArea />
-      </>
-    );
-  }
+      	<>
+        	<DataArea />
+      	</>
+    )
 }
